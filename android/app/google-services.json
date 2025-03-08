@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "548551285958",
+    "project_id": "paseos-de-mascotas",
+    "storage_bucket": "paseos-de-mascotas.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:548551285958:android:84164d6a0ef22bb7d64bc7",
+        "android_client_info": {
+          "package_name": "com.example.paseos_mascotas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-S5a8jb6S0CqI6rCmBoCSt4vbM3TjrGQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
