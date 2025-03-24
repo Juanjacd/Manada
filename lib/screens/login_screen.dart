@@ -1,8 +1,14 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:paseos_mascotas/services/auth_service.dart';
 import 'role_selection_screen.dart';
 import 'register_screen.dart';
+
+// Si tu VideoPlayerWidget está en otro archivo, ajústalo. 
+// Aquí lo dejo en el mismo para que funcione tal cual.
+import 'package:video_player/video_player.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // Inicia sesión con correo
   Future<void> _loginWithEmail() async {
     try {
       final result = await _authService.signInWithEmail(
@@ -24,10 +31,14 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (result != null) {
         if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
-        );
+        _showLoadingScreen();
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
+          );
+        });
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -35,8 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      // ignore: avoid_print
-      print("Error en Email Sign-In: $e");
+      debugPrint("Error en Email Sign-In: $e");
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error en Email Sign-In: $e")),
@@ -44,32 +54,32 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Inicia sesión con Google
   Future<void> _loginWithGoogle() async {
     try {
-      // ignore: avoid_print
-      print("Iniciando Google Sign-In...");
+      debugPrint("Iniciando Google Sign-In...");
       final result = await _authService.signInWithGoogle();
-      // ignore: avoid_print
-      print("Resultado de Google Sign-In: $result");
+      debugPrint("Resultado de Google Sign-In: $result");
       if (result != null) {
         if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
-        );
+        _showLoadingScreen();
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
+          );
+        });
       } else {
-        // ignore: avoid_print
-        print("No se pudo iniciar sesión con Google.");
+        debugPrint("No se pudo iniciar sesión con Google.");
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Error al iniciar sesión con Google.")),
         );
       }
     } catch (e, s) {
-      // ignore: avoid_print
-      print("Error en Google Sign-In: $e");
-      // ignore: avoid_print
-      print("Stacktrace: $s");
+      debugPrint("Error en Google Sign-In: $e");
+      debugPrint("Stacktrace: $s");
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error en Google Sign-In: $e")),
@@ -77,15 +87,20 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Inicia sesión con Facebook
   Future<void> _loginWithFacebook() async {
     try {
       final result = await _authService.signInWithFacebook();
       if (result != null) {
         if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
-        );
+        _showLoadingScreen();
+        Future.delayed(const Duration(seconds: 2), () {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
+          );
+        });
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -93,8 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      // ignore: avoid_print
-      print("Error en Facebook Sign-In: $e");
+      debugPrint("Error en Facebook Sign-In: $e");
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error en Facebook Sign-In: $e")),
@@ -102,15 +116,29 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Muestra la pantalla de carga (video) antes de navegar
+  void _showLoadingScreen() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: const VideoPlayerWidget(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Imagen de fondo y overlay
+      // Imagen de fondo con overlay
       body: Stack(
         fit: StackFit.expand,
         children: [
           Image.asset(
-            "assets/images/login_background.jpg",
+            "assets/images/login_background.jpg", // Ajusta al nombre real
             fit: BoxFit.cover,
           ),
           Container(
@@ -141,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         isRepeatingAnimation: false,
                       ),
                       const SizedBox(height: 40),
-                      // Formulario centrado y transparente
+                      // Formulario (contenedor semitransparente)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Container(
@@ -190,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      // Enlace para registrarse
+                      // Enlace para registro
                       TextButton(
                         onPressed: () {
                           Navigator.push(
@@ -241,3 +269,42 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+// Tu widget de video (si lo tenías en este archivo). Ajusta la ruta del mp4 si cambió.
+class VideoPlayerWidget extends StatefulWidget {
+  const VideoPlayerWidget({super.key});
+  
+  @override
+  State<VideoPlayerWidget> createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+  late VideoPlayerController _controller;
+  
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.asset(
+      'assets/images/paseador_con_tres_perros_en_un_parque.mp4',
+    )
+      ..initialize().then((_) {
+        setState(() {});
+        _controller.play();
+        _controller.setLooping(false);
+      });
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return _controller.value.isInitialized
+        ? VideoPlayer(_controller)
+        : const CircularProgressIndicator();
+  }
+  
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+

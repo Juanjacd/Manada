@@ -1,41 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:video_player/video_player.dart';
 
 class OwnerServiceScreen extends StatefulWidget {
   const OwnerServiceScreen({super.key});
-
+  
   @override
-  State<OwnerServiceScreen> createState() => _OwnerServiceScreenState();
+  // ignore: library_private_types_in_public_api
+  _OwnerServiceScreenState createState() => _OwnerServiceScreenState();
 }
 
 class _OwnerServiceScreenState extends State<OwnerServiceScreen> {
   GoogleMapController? _mapController;
+  late VideoPlayerController _videoController;
+  bool _isVideoFinished = false;
+
   static const CameraPosition _defaultPosition = CameraPosition(
-    target: LatLng(6.244203, -75.581211), // Posición por defecto (Medellín)
+    target: LatLng(6.244203, -75.581211),
     zoom: 14,
   );
 
   @override
   void initState() {
     super.initState();
-    _determinePositionAndAnimate();
+    _initializeVideo();
   }
 
-  // Solicita permisos y obtiene la posición actual
-  Future<void> _determinePositionAndAnimate() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  void _initializeVideo() {
+    _videoController = VideoPlayerController.asset(
+      'assets/images/paseador_con_tres_perros_en_un_parque.mp4',
+    )
+      ..initialize().then((_) {
+        setState(() {});
+        _videoController.play();
+        _videoController.setLooping(false);
+        _videoController.addListener(() {
+          if (_videoController.value.isInitialized &&
+              _videoController.value.position.inSeconds >=
+                  _videoController.value.duration.inSeconds) {
+            setState(() {
+              _isVideoFinished = true;
+            });
+            _determinePositionAndAnimate();
+          }
+        });
+      });
+  }
 
-    // Comprueba que los servicios de ubicación estén habilitados
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  Future<void> _determinePositionAndAnimate() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Puedes mostrar un mensaje o redirigir al usuario
       return Future.error('Location services are disabled.');
     }
-
-    // Comprueba y solicita permisos
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
@@ -45,8 +63,6 @@ class _OwnerServiceScreenState extends State<OwnerServiceScreen> {
     if (permission == LocationPermission.deniedForever) {
       return Future.error('Location permissions are permanently denied.');
     }
-
-    // Obtén la posición actual
     Position position = await Geolocator.getCurrentPosition();
     if (_mapController != null) {
       _mapController!.animateCamera(
@@ -66,49 +82,63 @@ class _OwnerServiceScreenState extends State<OwnerServiceScreen> {
       appBar: AppBar(
         title: const Text("Solicitar Servicio"),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: GoogleMap(
-              initialCameraPosition: _defaultPosition,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: true,
-              onMapCreated: _onMapCreated,
-            ),
-          ),
-          // Opciones para solicitar servicio (puedes personalizarlas)
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
+      body: _isVideoFinished
+          ? Column(
               children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
+                Expanded(
+                  child: GoogleMap(
+                    initialCameraPosition: _defaultPosition,
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: true,
+                    onMapCreated: _onMapCreated,
                   ),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Servicio Inmediato solicitado")),
-                    );
-                  },
-                  child: const Text("Servicio Inmediato"),
                 ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Servicio Inmediato solicitado")),
+                          );
+                        },
+                        child: const Text("Servicio Inmediato"),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Servicio Programado solicitado")),
+                          );
+                        },
+                        child: const Text("Servicio Programado"),
+                      ),
+                    ],
                   ),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Servicio Programado solicitado")),
-                    );
-                  },
-                  child: const Text("Servicio Programado"),
                 ),
               ],
+            )
+          : Center(
+              child: _videoController.value.isInitialized
+                  ? AspectRatio(
+                      aspectRatio: _videoController.value.aspectRatio,
+                      child: VideoPlayer(_videoController),
+                    )
+                  : const CircularProgressIndicator(),
             ),
-          ),
-        ],
-      ),
     );
+  }
+
+  @override
+  void dispose() {
+    _videoController.dispose();
+    super.dispose();
   }
 }

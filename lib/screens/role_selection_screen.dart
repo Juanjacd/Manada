@@ -1,6 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'dog_walkers_screen.dart';
 import 'owner_service_screen.dart';
+import '../common/loading_overlay.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
@@ -16,53 +19,59 @@ class RoleSelectionScreen extends StatelessWidget {
             "assets/images/dos_perros_corriendo_en_zona_verde_de.jpeg",
             fit: BoxFit.cover,
           ),
-          // Overlay para atenuar: 30% de opacidad (0.3 * 255 ≈ 77)
+          // Overlay semitransparente
           Container(
             color: Colors.black.withAlpha(77),
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 40),
-                  Text(
+                  const SizedBox(height: 20),
+                  const Text(
                     "Bienvenido a La Manada",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  // Espacio para bajar los botones
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 40),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      await showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => const LoadingOverlay(),
+                      );
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => const DogWalkersScreen()),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(200, 50),
-                    ),
+                    style: ElevatedButton.styleFrom(minimumSize: const Size(200, 50)),
                     child: const Text("Soy Paseador"),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      await showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => const LoadingOverlay(),
+                      );
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => const OwnerServiceScreen()),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(200, 50),
-                    ),
+                    style: ElevatedButton.styleFrom(minimumSize: const Size(200, 50)),
                     child: const Text("Soy Papá/Mamá de Mascota"),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
