@@ -1,0 +1,2 @@
+C:/Users/1/paseos_mascotas/android/app/.cxx/Debug/6q1b2o5n/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/1/paseos_mascotas/android/app/.cxx/Debug/6q1b2o5n/x86_64/CMakeFiles/rebuild_cache.dir

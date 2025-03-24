@@ -21,7 +21,7 @@ plugins {
 
 android {
     namespace "com.example.paseos_mascotas"
-    compileSdkVersion 34
+    compileSdkVersion 35
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -37,7 +37,7 @@ android {
         // Cambiado para que coincida con el namespace y la configuración en Firebase
         applicationId "com.example.paseos_mascotas"
         minSdkVersion 23
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
     }

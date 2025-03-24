@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'firebase_options.dart'; // Asegúrate de generar este archivo con flutterfire configure
 import 'package:paseos_mascotas/screens/login_screen.dart';
 import 'package:paseos_mascotas/screens/home_screen.dart';
+import 'package:paseos_mascotas/screens/splash_screen.dart'; // Nuevo
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Inicializa Firebase pasando las opciones según la plataforma
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp();
+  await FirebaseAuth.instance.signOut(); // Forzar que el usuario inicie sesión siempre
   runApp(const MyApp());
 }
 
@@ -31,13 +31,12 @@ class MyApp extends StatelessWidget {
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
+          // Mientras se carga el estado, mostramos el splash personalizado
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const SplashScreen();
           }
           if (snapshot.data == null) {
-            return const LoginScreen();
+            return LoginScreen();
           }
           return const HomeScreen();
         },

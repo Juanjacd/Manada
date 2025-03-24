@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:geolocator/geolocator.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,43 +16,7 @@ class HomeScreenState extends State<HomeScreen> {
     zoom: 14,
   );
 
-  GoogleMapController? _mapController;
   int _selectedIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _getUserLocation();
-  }
-
-  Future<void> _getUserLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-    
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Solicitar al usuario que active el servicio
-      return;
-    }
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return;
-    }
-    if (permission == LocationPermission.deniedForever) return;
-
-    Position position = await Geolocator.getCurrentPosition();
-    if (mounted && _mapController != null) {
-      _mapController!.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(position.latitude, position.longitude),
-            zoom: 14,
-          ),
-        ),
-      );
-    }
-  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -60,9 +24,14 @@ class HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _recenterMap() async {
-    // Puedes implementar un botón para recenter el mapa en la ubicación actual
-    await _getUserLocation();
+  // Función separada para el logout y la navegación
+  Future<void> _signOutAndNavigate() async {
+    await FirebaseAuth.instance.signOut();
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
   }
 
   @override
@@ -73,9 +42,7 @@ class HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-            },
+            onPressed: _signOutAndNavigate,
           )
         ],
       ),
@@ -88,9 +55,8 @@ class HomeScreenState extends State<HomeScreen> {
               myLocationEnabled: true,
               myLocationButtonEnabled: true,
               onMapCreated: (GoogleMapController controller) {
-                _mapController = controller;
-                // Una vez creado el mapa, intenta centrar en la ubicación
-                _getUserLocation();
+                // Si en el futuro necesitas el controlador, puedes asignarlo aquí.
+                // Ejemplo: _mapController = controller;
               },
             ),
           ),
@@ -130,10 +96,6 @@ class HomeScreenState extends State<HomeScreen> {
             label: "Configuración",
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _recenterMap,
-        child: const Icon(Icons.my_location),
       ),
     );
   }
